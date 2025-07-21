@@ -13,6 +13,12 @@ interface DecodedUser extends JwtPayload {
   email: string;
 }
 
+/**
+ *  Handles login request to api and set cookies in fonrtend.
+ * Fetch returns a token
+ * Compare token with secret
+ * @returns void it login request was succssesgull or string with the error.
+ */
 export const loginAction = async (
   formData: FormData
 ): Promise<void | string> => {
@@ -32,15 +38,7 @@ export const loginAction = async (
     ]
   
     await setCookies(cookiesToSet);
-
-    const cookieStore = await cookies();
-
-    cookieStore.set("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 24 * 7,
-      path: "/",
-    });
+    
   } catch (err) {
     return "Credentials are incorrect";
   }
@@ -50,6 +48,10 @@ export const loginAction = async (
 const getTokenForLogin = async (formData: FormData) => {
   const email = formData.get("email");
   const password = formData.get("password");
+
+  if (!email && !password) {
+    throw new Error("Fields are required");
+  }
 
   const res = await fetch(`${config.api}/users/auth`, {
     method: "POST",
