@@ -6,12 +6,9 @@ import { config } from "@/config/config";
 import { cookies } from "next/headers";
 import Jwt from "jsonwebtoken";
 import type { JwtPayload } from "jsonwebtoken";
+import type { Payload } from "@/types/users";
 
-interface DecodedUser extends JwtPayload {
-  id: string;
-  name: string;
-  email: string;
-}
+interface DecodedUser extends Payload, JwtPayload {}
 
 /**
  *  Handles login request to api and set cookies in fonrtend.
@@ -32,9 +29,9 @@ export const loginAction = async (
     const decoded = Jwt.verify(token, secret) as DecodedUser;
 
     const cookiesToSet = [
-      {name: "id", value: decoded.id},
+      {name: "userId", value: decoded.id},
       {name: "userName", value: decoded.name},
-      {name: "token", value: token},
+      {name: "authToken", value: token},
     ]
   
     await setCookies(cookiesToSet);
@@ -53,7 +50,7 @@ const getTokenForLogin = async (formData: FormData) => {
     throw new Error("Fields are required");
   }
 
-  const res = await fetch(`${config.api}/users/auth`, {
+  const res = await fetch(`${config.BACKEND_URL}/users/auth`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -75,7 +72,7 @@ const getTokenForLogin = async (formData: FormData) => {
   return token;
 };
 
-const setCookies = async (cookiesToSet: { name: string; value: string }[]) => {
+const setCookies = async (cookiesToSet: { name: string; value: string | number }[]) => {
 
   if(cookiesToSet.length === 0) {
     throw new Error("No cookies to set");
@@ -83,9 +80,18 @@ const setCookies = async (cookiesToSet: { name: string; value: string }[]) => {
 
   const cookieStore = await cookies();
   cookiesToSet.forEach(({ name, value }) => {
+
+    let newValue;
+
+    if (typeof value === "number") {
+      newValue = value.toString();
+    } else {
+      newValue = value;
+    }
+
     cookieStore.set({
       name,
-      value,
+      value: newValue,
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       maxAge: 60 * 60 * 24 * 7, // 7 días

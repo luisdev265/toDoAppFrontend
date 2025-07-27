@@ -15,7 +15,7 @@ export default function SubmitButton() {
       {pending ? (
         <LoaderCircle size={24} className="animate-spin" />
       ) : (
-        "LogIn"
+        "Register"
       )}
     </button>
   );
