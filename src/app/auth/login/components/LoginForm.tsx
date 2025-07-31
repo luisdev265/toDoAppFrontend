@@ -6,6 +6,7 @@ import React from "react";
 import SubmitButton from "./SubmitButton";
 import { loginAction } from "../server/actions";
 import { useState } from "react";
+import LoginGoogleButton from "./LoginGoogleButton";
 
 export default function LoginForm() {
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +45,8 @@ export default function LoginForm() {
       </div>
       {error && <span className="text-xs text-red-500">{error}</span>}
       <SubmitButton />
+      <span>or</span>
+      <LoginGoogleButton />
     </form>
   );
 }
